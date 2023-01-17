@@ -7,7 +7,7 @@ from facap.geometry.numpy import unproject_points_rotvec
 from facap.geometry.open3d import make_pcd_from_numpy, make_line_set
 
 
-def read_npy(path):
+def read_npy(path): # laod floorplan.npy
     paths = np.load(path, allow_pickle=True)
 
     edges = []

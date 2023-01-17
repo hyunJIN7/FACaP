@@ -56,10 +56,10 @@ def read_features(scan_path, xyds, frame_ids, min_freq=2):
     cameras, images, points_3d = read_model(f'{scan_path}/sparse/models/triangulated')
 
     result = {}
-    for point in points_3d:
+    for point in points_3d:  #POINT3D_ID, X, Y, Z, R, G, B, ERROR, TRACK[] as (IMAGE_ID, POINT2D_IDX)
         result[point] = {}
-
-        for img_id in points_3d[point].image_ids:
+        #TODO : 그럼 여기 get_xyds 값 사용하는 파트에서 depth 이미지 confidence 고려하게 하든가 이렇게 코드 진행하도 될듯
+        for img_id in points_3d[point].image_ids: #해당 point cloud가 보이는 이미지에서 depth 범위 조건 만족하는 depth와 x,y 위치(아마 이미지 내에서)
             img = images[img_id]
             xy = tuple((img.xys[img.point3D_ids == point] + 0.5).astype(int)[0])
             yx = (xy[1], xy[0])
@@ -73,15 +73,15 @@ def read_features(scan_path, xyds, frame_ids, min_freq=2):
     for point in result:
         if len(result[point]) > min_freq:
             filtered_result[point] = result[point]
-    return filtered_result
+    return filtered_result  # 이렇게 해서 각 포인트별로 : 해당 포인트가 보이는 이미지 내에서 그 포인트 위치 정보 저장
 
 
 def get_index_value_dict(array_2d, mask, sparsity=1):
-    y, x = np.array(mask).astype(int)
-    d = array_2d[mask].astype(float)
-    x, y, d = x[::sparsity], y[::sparsity], d[::sparsity]
+    y, x = np.array(mask).astype(int)  # TODO : shape???
+    d = array_2d[mask].astype(float) # mask 적용한 depth
+    x, y, d = x[::sparsity], y[::sparsity], d[::sparsity] # TODO : ??????
     yxd = dict(zip(list(zip(y, x)), d))
-    return yxd
+    return yxd #depth 범위 조건 만족한 depth 관련 무언가
 
 
 class Camera:
@@ -144,7 +144,7 @@ class Scan:
         return pcd_combined
 
     def make_mesh(self, vox_length=0.05):
-
+        #input RGB,depth로 point cloud 생성
         volume = integration.ScalableTSDFVolume(
             voxel_length=vox_length,
             sdf_trunc=vox_length * 4,
@@ -186,8 +186,8 @@ class Scan:
         floor = deepcopy(left)
         wall = deepcopy(left)
 
-        yxds = get_yxds(self.scan_path, self._frames)
-        features = read_features(self.scan_path, yxds, self._frames)
+        yxds = get_yxds(self.scan_path, self._frames) #TODO : check  depth 범위 조건 만족한 depth 관련 무언가
+        features = read_features(self.scan_path, yxds, self._frames) #각 포인트별로 : 해당 포인트가 보이는 이미지 내에서 그 포인트 위치 정보 저장
 
         for point_id in features:
             point = features[point_id]

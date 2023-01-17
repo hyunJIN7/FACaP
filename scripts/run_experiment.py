@@ -26,7 +26,7 @@ if __name__ == '__main__':
     scan = Scan(scan_path, scale=cfg["data"]["depths_scale"])
     save_path = cfg["paths"]["save_path"]
     os.makedirs(save_path, exist_ok=True)
-    o3d.io.write_triangle_mesh(f"{save_path}/source_mesh.ply", scan.make_mesh())
+    o3d.io.write_triangle_mesh(f"{save_path}/source_mesh.ply", scan.make_mesh()) #input RGB,depth로 point cloud 생성
 
     data = scan.generate_ba_data(min_frame_difference=cfg["data"]["min_frame_difference"],
                                  max_initial_distance=cfg["data"]["max_initial_distance"],
